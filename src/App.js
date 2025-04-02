@@ -1,23 +1,44 @@
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import './App.css';
+import CurrentWeather from './components/currentWeather';
+import { getCurrentWeather } from './services/weatherService';
 
 function App() {
+  const [weatherData, setWeatherData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [city, setCity] = useState('London'); // Default city
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        setLoading(true);
+        const data = await getCurrentWeather(city);
+        setWeatherData(data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch weather data. Please try again.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWeather();
+  }, [city]);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1>Weather Dashboard</h1>
       </header>
+      <main>
+        {loading && <p>Loading...</p>}
+        {error && <p className="error">{error}</p>}
+        {!loading && !error && weatherData && (
+          <CurrentWeather weatherData={weatherData} />
+        )}
+      </main>
     </div>
   );
 }
